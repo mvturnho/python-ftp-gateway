@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Uploader</title>
+</head>
+<body>
+  <h1>Upload File</h1>
+  <form id="uploadForm">
+    <label for="apiUrl">API URL:</label>
+    <input type="text" id="apiUrl" name="apiUrl" required>
+    <br><br>
+    <label for="apiKey">API Key:</label>
+    <input type="text" id="apiKey" name="apiKey" required>
+    <br><br>
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    <br><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br><br>
+    <label for="platename">Platename:</label>
+    <input type="text" id="platename" name="platename" required>
+    <br><br>
+    <label for="fileInput">Select file:</label>
+    <input type="file" id="fileInput" name="fileInput" required>
+    <br><br>
+    <button type="submit">Upload</button>
+  </form>
+
+  <script>
+    class FileUploader {
+      constructor(apiUrl, apiKey) {
+        this.apiUrl = apiUrl;
+        this.apiKey = apiKey;
+      }
+
+      async uploadFile(file, filename, platename, username, password) {
+        try {
+          const response = await fetch(this.apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'API-Key': this.apiKey,
+              'Filename': filename,
+              'Platename': platename,
+              'Username': username,
+              'Password': password
+            },
+            body: file
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+          }
+
+          const responseData = await response.json();
+          return responseData;
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          throw error;
+        }
+      }
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const apiUrl = document.getElementById('apiUrl').value;
+      const apiKey = document.getElementById('apiKey').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const platename = document.getElementById('platename').value;
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      const filename = file.name;
+
+      const fileUploader = new FileUploader(apiUrl, apiKey);
+
+      try {
+        const result = await fileUploader.uploadFile(file, filename, platename, username, password);
+        console.log('File uploaded successfully:', result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

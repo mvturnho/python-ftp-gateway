@@ -46,7 +46,7 @@ def upload_file():
         
         # Read binary data from the request body
         file_data = request.get_data()
-        
+        print('upload '+filename +' to '+ftp_host)
         # Establish FTP connection
         ftp = ftplib.FTP(ftp_host, ftp_user, ftp_pass)
         ftp.cwd(ftp_dir)
