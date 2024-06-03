@@ -1,0 +1,13 @@
+{
+    "api_key": "your_api_key",
+    "cors_origins": [
+        "http://localhost:5173"
+    ],
+    "ftp_credentials": {
+        "wallplate2": {
+            "host": "wallplate2.local",
+            "user": "ftpuser",
+            "pass": "ftpuser"
+        }
+    }
+}
