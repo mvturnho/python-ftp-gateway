@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Header, Request, File
 from fastapi.middleware.cors import CORSMiddleware
 import aiofiles
 import json
+import subprocess
 import os
 from pathlib import Path
 
@@ -68,4 +69,27 @@ async def upload_file(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    # uvicorn.run(app, host="0.0.0.0", port=5000)
+    http_command = [
+        "uvicorn",
+        "ftp-gw-api:app",  # Adjust to your app's module and instance
+        "--host", "0.0.0.0",
+        "--port", "5000"
+    ]
+
+    https_command = [
+        "uvicorn",
+        "ftp-gw-api:app",  # Adjust to your app's module and instance
+        "--host", "0.0.0.0",
+        "--port", "5001",
+        "--ssl-keyfile", "key.pem",
+        "--ssl-certfile", "cert.pem"
+    ]
+
+    # Start both servers
+    http_server = subprocess.Popen(http_command)
+    https_server = subprocess.Popen(https_command)
+
+    # Wait for both servers to complete
+    http_server.wait()
+    https_server.wait()
