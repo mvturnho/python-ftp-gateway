@@ -29,6 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/upload/status")
+async def upload_file():
+    return '<html><body><h1>FTP gateway is up and running!</h1></body></html>'
+
 @app.post("/upload")
 async def upload_file(
     request: Request,
