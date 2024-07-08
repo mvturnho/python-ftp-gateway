@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 import aiofiles
 import json
 import subprocess
@@ -10,6 +11,8 @@ import os
 from pathlib import Path
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 # Load configuration from config.json
 CONFIG_PATH = "config.json"
@@ -71,27 +74,13 @@ async def upload_file(
     return {"detail": "File uploaded successfully"}
 
 @app.get("/upload/status", response_class=HTMLResponse)
-async def get_upload_status():
-    status_html_path = Path("status.html")
-    if not status_html_path.exists():
-        raise HTTPException(status_code=404, detail="Status HTML file not found")
-
-    async with aiofiles.open(status_html_path, 'r') as file:
-        content = await file.read()
-
-    return HTMLResponse(content=content)
+async def get_upload_status(request: Request):
+    return templates.TemplateResponse("status.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}/upload"})
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
-        not_found_html_path = Path("404.html")
-        if not not_found_html_path.exists():
-            return HTMLResponse(content="<h1>404 Not Found</h1><p>Sorry, the page you are looking for does not exist.</p>", status_code=404)
-
-        async with aiofiles.open(not_found_html_path, 'r') as file:
-            content = await file.read()
-
-        return HTMLResponse(content=content, status_code=404)
+        return templates.TemplateResponse("404.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}/upload"}, status_code=404)
     raise exc
 
 if __name__ == "__main__":
