@@ -82,30 +82,3 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
         return templates.TemplateResponse("404.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/upload"}, status_code=404)
     raise exc
-
-if __name__ == "__main__":
-    import subprocess
-
-    http_command = [
-        "uvicorn",
-        "main:app",  # Replace 'main' with the module name of your app
-        "--host", "0.0.0.0",
-        "--port", str(HTTP_PORT)
-    ]
-
-    https_command = [
-        "uvicorn",
-        "main:app",  # Replace 'main' with the module name of your app
-        "--host", "0.0.0.0",
-        "--port", str(HTTPS_PORT),
-        "--ssl-keyfile", "path/to/key.pem",
-        "--ssl-certfile", "path/to/cert.pem"
-    ]
-
-    # Start both servers
-    http_server = subprocess.Popen(http_command)
-    https_server = subprocess.Popen(https_command)
-
-    # Wait for both servers to complete
-    http_server.wait()
-    https_server.wait()

@@ -3,3 +3,4 @@ tmp
 config.json
 certs/cert.pem
 certs/key.pem
+.venv
