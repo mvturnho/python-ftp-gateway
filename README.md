@@ -38,24 +38,41 @@ This project provides an API gateway to transfer files to an FTP server using Fa
     pip install -r requirements.txt
     ```
 
-4. **Create the lookup table JSON file:**
+4. **Create config JSON file:**
 
-    Create a file named `lookup_table.json` in the project root directory with the following format:
+    Create a file named `config.json` in the project root directory with the following format:
 
     ```json
     {
-      "platename1": {
-        "host": "ftp.example.com",
-        "username": "your_username",
-        "password": "your_password"
-      },
-      "platename2": {
-        "host": "ftp.anotherexample.com",
-        "username": "another_username",
-        "password": "another_password"
-      }
+        "http_port": 5000,
+        "https_port": 5001,
+        "api_key": "your_api_key",
+        "cors_origins": [
+            "http://localhost:5173"
+        ],
+        "ftp_credentials": {
+            "wallplate2": {
+                "host": "wallplate2.local",
+                "user": "ftpuser",
+                "pass": "ftpuser"
+            }
+        }
     }
     ```
+5. **Create certificate files**
+
+    Create the certificate files in the cert directory. When the directory does not exist you should create on:
+
+    ```bash
+    mkdir certs
+    cd certs
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
+    ```
+
+    After running the command and providing the information, you will have two files in your certs directory:
+
+    - key.pem: The private key file.
+    - cert.pem: The self-signed certificate file.
 
 ## Usage
 
