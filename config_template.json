@@ -1,4 +1,6 @@
 {
+    "http_port": 5000,
+    "https_port": 5001,
     "api_key": "your_api_key",
     "cors_origins": [
         "http://localhost:5173"

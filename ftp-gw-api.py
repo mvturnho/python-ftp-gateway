@@ -25,6 +25,8 @@ except FileNotFoundError:
 API_KEY = config["api_key"]
 CORS_ORIGINS = config["cors_origins"]
 FTP_CREDENTIALS = config["ftp_credentials"]
+HTTP_PORT = config["http_port"]
+HTTPS_PORT = config["https_port"]
 
 # Configure CORS
 app.add_middleware(
@@ -75,12 +77,12 @@ async def upload_file(
 
 @app.get("/upload/status", response_class=HTMLResponse)
 async def get_upload_status(request: Request):
-    return templates.TemplateResponse("status.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}/upload"})
+    return templates.TemplateResponse("status.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/upload"})
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
-        return templates.TemplateResponse("404.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}/upload"}, status_code=404)
+        return templates.TemplateResponse("404.html", {"request": request, "upload_url": f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/upload"}, status_code=404)
     raise exc
 
 if __name__ == "__main__":
@@ -90,14 +92,14 @@ if __name__ == "__main__":
         "uvicorn",
         "ftp-gw-api:app",  # Adjust to your app's module and instance
         "--host", "0.0.0.0",
-        "--port", "5000"
+        "--port", str(HTTP_PORT)
     ]
 
     https_command = [
         "uvicorn",
         "ftp-gw-api:app",  # Adjust to your app's module and instance
         "--host", "0.0.0.0",
-        "--port", "5001",
+        "--port", str(HTTPS_PORT),
         "--ssl-keyfile", "key.pem",
         "--ssl-certfile", "cert.pem"
     ]
