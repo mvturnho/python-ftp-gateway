@@ -100,8 +100,8 @@ if __name__ == "__main__":
         "ftp-gw-api:app",  # Adjust to your app's module and instance
         "--host", "0.0.0.0",
         "--port", str(HTTPS_PORT),
-        "--ssl-keyfile", "key.pem",
-        "--ssl-certfile", "cert.pem"
+        "--ssl-keyfile", "certs/key.pem",
+        "--ssl-certfile", "certs/cert.pem"
     ]
 
     # Start both servers
