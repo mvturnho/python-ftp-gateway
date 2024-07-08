@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Request, File
 from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import aiofiles
 import json
@@ -61,7 +63,7 @@ async def upload_file(
             with open(temp_file_path, "rb") as f:
                 ftp.storbinary(f"STOR {filename}", f)
     except ftplib.all_errors as e:
-        raise HTTPException(status_code=500, detail=f"FTP upload error: {e}")
+        raise HTTPException(status_code=500, detail="FTP upload error: {e}")
 
     # Clean up the temporary file
     # os.remove(temp_file_path)
@@ -78,6 +80,19 @@ async def get_upload_status():
         content = await file.read()
 
     return HTMLResponse(content=content)
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        not_found_html_path = Path("404.html")
+        if not not_found_html_path.exists():
+            return HTMLResponse(content="<h1>404 Not Found</h1><p>Sorry, the page you are looking for does not exist.</p>", status_code=404)
+
+        async with aiofiles.open(not_found_html_path, 'r') as file:
+            content = await file.read()
+
+        return HTMLResponse(content=content, status_code=404)
+    raise exc
 
 if __name__ == "__main__":
     import uvicorn
