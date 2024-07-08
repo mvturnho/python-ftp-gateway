@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request, Header, UploadFile, File
+from fastapi import FastAPI, HTTPException, Header, Request, File
 from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
-from starlette.exceptions import HTTPException as StarletteHTTPException
 import aiofiles
 import json
+import subprocess
 import os
 from pathlib import Path
 
@@ -37,11 +39,12 @@ app.add_middleware(
 
 @app.post("/upload")
 async def upload_file(
-    file: UploadFile = File(...),
+    request: Request,
     filename: str = Header(...),
     platename: str = Header(...),
     api_key: str = Header(...)
 ):
+    body = await request.body()
     # Validate API key
     if api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
@@ -53,23 +56,22 @@ async def upload_file(
         raise HTTPException(status_code=404, detail="FTP details not found for platename")
 
     # Save the file to a temporary location
-    temp_file_path = Path(f"/tmp/{filename}")
+    temp_file_path = Path(f"./tmp/{filename}")
     async with aiofiles.open(temp_file_path, 'wb') as out_file:
-        while content := await file.read(1024):  # Read file in chunks
-            await out_file.write(content)
+            await out_file.write(body)
 
     # Upload file to FTP server
     import ftplib
     try:
         with ftplib.FTP(ftp_details["host"]) as ftp:
-            ftp.login(ftp_details["username"], ftp_details["password"])
+            ftp.login(ftp_details["user"], ftp_details["pass"])
             with open(temp_file_path, "rb") as f:
                 ftp.storbinary(f"STOR {filename}", f)
     except ftplib.all_errors as e:
-        raise HTTPException(status_code=500, detail=f"FTP upload error: {e}")
+        raise HTTPException(status_code=500, detail="FTP upload error: {e}")
 
     # Clean up the temporary file
-    os.remove(temp_file_path)
+    # os.remove(temp_file_path)
 
     return {"detail": "File uploaded successfully"}
 
@@ -84,22 +86,22 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     raise exc
 
 if __name__ == "__main__":
-    import subprocess
-
+    import uvicorn
+    # uvicorn.run(app, host="0.0.0.0", port=5000)
     http_command = [
         "uvicorn",
-        "main:app",  # Replace 'main' with the module name of your app
+        "ftp-gw-api:app",  # Adjust to your app's module and instance
         "--host", "0.0.0.0",
         "--port", str(HTTP_PORT)
     ]
 
     https_command = [
         "uvicorn",
-        "main:app",  # Replace 'main' with the module name of your app
+        "ftp-gw-api:app",  # Adjust to your app's module and instance
         "--host", "0.0.0.0",
         "--port", str(HTTPS_PORT),
-        "--ssl-keyfile", "path/to/key.pem",
-        "--ssl-certfile", "path/to/cert.pem"
+        "--ssl-keyfile", "certs/key.pem",
+        "--ssl-certfile", "certs/cert.pem"
     ]
 
     # Start both servers

@@ -12,23 +12,20 @@ except FileNotFoundError:
 HTTP_PORT = config["http_port"]
 HTTPS_PORT = config["https_port"]
 
-# Specify full path to uvicorn.exe
-UVICORN_PATH = "C:\\path\\to\\uvicorn.exe"  # Replace with actual path
-
 http_command = [
-    UVICORN_PATH,
+    "uvicorn",
     "main:app",  # Replace 'main' with the module name of your app
     "--host", "0.0.0.0",
     "--port", str(HTTP_PORT)
 ]
 
 https_command = [
-    UVICORN_PATH,
+    "uvicorn",
     "main:app",  # Replace 'main' with the module name of your app
     "--host", "0.0.0.0",
     "--port", str(HTTPS_PORT),
-    "--ssl-keyfile", "path/to/key.pem",
-    "--ssl-certfile", "path/to/cert.pem"
+    "--ssl-keyfile", "certs/key.pem",
+    "--ssl-certfile", "certs/cert.pem"
 ]
 
 # Start both servers
