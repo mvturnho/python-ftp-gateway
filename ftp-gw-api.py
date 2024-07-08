@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header, Request, File
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import aiofiles
 import json
@@ -28,10 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/upload/status")
-async def upload_file():
-    return '<html><body><h1>FTP gateway is up and running!</h1></body></html>'
 
 @app.post("/upload")
 async def upload_file(
@@ -70,6 +67,17 @@ async def upload_file(
     # os.remove(temp_file_path)
 
     return {"detail": "File uploaded successfully"}
+
+@app.get("/upload/status", response_class=HTMLResponse)
+async def get_upload_status():
+    status_html_path = Path("status.html")
+    if not status_html_path.exists():
+        raise HTTPException(status_code=404, detail="Status HTML file not found")
+
+    async with aiofiles.open(status_html_path, 'r') as file:
+        content = await file.read()
+
+    return HTMLResponse(content=content)
 
 if __name__ == "__main__":
     import uvicorn
